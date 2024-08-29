@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "Users" ALTER COLUMN "groups" SET DATA TYPE TEXT;
