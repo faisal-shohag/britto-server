@@ -1,13 +1,16 @@
-const express = require('express')
+import express from 'express';
+import cors from 'cors';
+import bodyParser from 'body-parser';
 const app = express()
-const cors = require('cors')
-const bodyParser = require('body-parser') 
 const port = 3000
 
 
-const get = require('./API/get')
-const post = require('./API/post')
-const put = require('./API/put')
+import get from './API/get.js'
+import post from './API/post.js'
+import put from './API/put.js'
+import DELETE from './API/delete.js';
+
+import genai from './API/genai.js'
 
 
 app.use(cors())
@@ -22,10 +25,16 @@ app.get('/', (req, res) => {
 app.use(get)
 app.use(post)
 app.use(put)
+app.use(DELETE)
+app.use(genai)
 
 app.listen(port, () => {
   console.log(`App listening on port ${port}`)
 })
 
 
+
+
+
 export default app
+// module.exports = app

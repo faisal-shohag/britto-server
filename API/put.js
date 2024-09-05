@@ -1,8 +1,7 @@
-const express = require('express');
-const { PrismaClient } = require('@prisma/client');
-const prisma = new PrismaClient();
+import { Router } from 'express'
+import prisma from '../DB/db.config.js'
+const router = Router()
 
-const router = express.Router();
 
 router.put('/users/profile-photo/:email', async (req, res) => {
     const userEmail = req.params.email;
@@ -50,4 +49,4 @@ router.put('/users/update/:id', async (req, res) => {
     }
 });
 
-module.exports = router;
+export default router;

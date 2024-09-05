@@ -1,5 +1,5 @@
-const { Router } = require('express')
-const prisma = require('../DB/db.config')
+import { Router } from 'express'
+import prisma from '../DB/db.config.js'
 const router = Router()
 
 
@@ -61,4 +61,50 @@ router.post('/practices', async (req, res) => {
 })
 
 
-module.exports = router
+
+// Questions
+router.post('/questions', async (req, res) => {
+    try {
+        const { title, options, explanation, correctAnswer, userId, tags } = req.body;
+
+        // Create the question
+        const question = await prisma.question.create({
+            data: {
+                title,
+                explanation,
+                correctAnswer,
+                user: { connect: { id: userId } },
+                options: {
+                    create: options.map((option) => ({
+                        text: option,
+                    })),
+                },
+                tags: {
+                    create: tags.map((tag) => ({
+                        tag: {
+                            connectOrCreate: {
+                                where: { name: tag },
+                                create: { name: tag },
+                            },
+                        },
+                    })),
+                },
+            },
+            include: {
+                options: true,
+                tags: {
+                    include: {
+                        tag: true,
+                    },
+                },
+            },
+        });
+
+        res.status(201).json({ question });
+    } catch (error) {
+        console.error('Error creating question:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+export default router;

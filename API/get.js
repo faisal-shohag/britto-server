@@ -1,5 +1,5 @@
-const { Router } = require('express')
-const prisma = require('../DB/db.config')
+import { Router } from 'express'
+import prisma from '../DB/db.config.js'
 const router = Router()
 
 
@@ -93,4 +93,50 @@ router.get('/notices', async (req, res) => {
     }
 })
 
-module.exports = router
+
+//latest questions
+router.get('/questions/recent', async (req, res) => {
+    try {
+        const questions = await prisma.question.findMany({
+          orderBy: {
+            createdAt: 'desc',
+          },
+          take: 10,
+          include: {
+            options: {
+              select: {
+                text: true,
+              },
+            },
+            tags: {
+              select: {
+                tag: {
+                  select: {
+                    name: true,
+                  },
+                },
+              },
+            },
+          },
+        });
+    
+        // Transform the response to exclude `id` from options and format tags
+        const transformedQuestions = questions.map((question) => ({
+          id: question.id,
+          title: question.title,
+          explanation: question.explanation,
+          correctAnswer: question.correctAnswer,
+          userId: question.userId,
+          createdAt: question.createdAt,
+          updatedAt: question.updatedAt,
+          options: question.options.map(option => ({ text: option.text })),
+          tags: question.tags.map(tagOnQuestion => tagOnQuestion.tag.name),
+        }));
+    
+        res.json(transformedQuestions);
+      } catch (error) {
+        res.status(500).json({ error: 'Something went wrong.' });
+      }
+  });
+
+export default router

@@ -9,60 +9,115 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
   directUrl = env("DIRECT_URL")
 }
 
-
-model Users{
-  id              Int                    @id @default(autoincrement())
-  displayName     String
-  email           String   @unique
-  phone           String?
-  institute       String?
-  photoURL        String?
-  thumb           String?
-  ID              String?
-  group          String?
-  district       String?
-  father          String?
-  mother          String?
-  packages        Json?
-  uid              String?
-  isCompleted    Boolean @default(false)
-  
+model Users {
+  id          Int     @id @default(autoincrement())
+  displayName String
+  email       String  @unique
+  phone       String?
+  institute   String?
+  photoURL    String?
+  thumb       String?
+  ID          String?
+  group       String?
+  district    String?
+  father      String?
+  mother      String?
+  packages    Json?
+  uid         String?
+  isCompleted Boolean @default(false)
+  questions   Question[]
+  reports     Report[]
+  createdAt   DateTime @default(now())
 }
 
-model Questions{
-  id              Int                    @id @default(autoincrement())
-  q               String                 @unique
-  options         Json
-  ans             Int
-  exp             String
-  tags            Json
-  author          String?
+model Question {
+  id          Int      @id @default(autoincrement())
+  title       String
+  options Option[]
+  explanation String?
+  correctAnswer Int
+  user Users @relation(fields: [userId], references: [id])
+  userId Int
+  tags    TagsOnQuestions[]
+  reports Report[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
 }
 
+
+
+model Option {
+  id         Int      @id @default(autoincrement())
+  text       String
+  questionId Int
+  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  @@index([questionId])
+}
+
+model Tag {
+  id       Int      @id @default(autoincrement())
+  name     String   @unique
+  questions TagsOnQuestions[]
+}
+
+model TagsOnQuestions {
+  questionId Int
+  tagId      Int
+  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  tag        Tag      @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([questionId, tagId])
+  @@index([questionId])
+  @@index([tagId])
+}
+
+model Report {
+  id        Int      @id @default(autoincrement())
+  comment   String
+  createdAt DateTime @default(now())
+  questionId Int
+  question  Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  user Users @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId Int
+  @@index([questionId])
+}
+
+model Course {
+  id        Int      @id @default(autoincrement())
+  title String
+  description String
+  duration DateTime
+
+  createdAt DateTime @default(now())
+}
+
+model Exam {
+  id        Int      @id @default(autoincrement())
+  title String
+  description String 
+  type String
+  duration DateTime
+
+  createdAt DateTime @default(now())
+}
 
 model Practices {
-   id              Int                    @id @default(autoincrement())
-   subject         String
-   chapter         String
-   examName        String
-   exam            Json
+  id       Int    @id @default(autoincrement())
+  subject  String
+  chapter  String
+  examName String
+  exam     Json
 }
-
 
 model Notices {
-  id Int @id @default(autoincrement())
-  icon  String?
+  id     Int      @id @default(autoincrement())
+  icon   String?
   notice String
-  date DateTime   @default(now())
+  date   DateTime @default(now())
 }
-
-
-
-
-
-
