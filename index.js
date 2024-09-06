@@ -9,7 +9,7 @@ import get from './API/get.js'
 import post from './API/post.js'
 import put from './API/put.js'
 import DELETE from './API/delete.js';
-
+import circle from './API/circle.js';
 import genai from './API/genai.js'
 
 
@@ -26,6 +26,7 @@ app.use(get)
 app.use(post)
 app.use(put)
 app.use(DELETE)
+app.use(circle)
 app.use(genai)
 
 app.listen(port, () => {
