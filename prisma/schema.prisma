@@ -126,9 +126,6 @@ model Notices {
   date   DateTime @default(now())
 }
 
-
-
-// CIRCLE FORUM
 model Post {
   id        Int       @id @default(autoincrement())
   content   String
@@ -138,7 +135,7 @@ model Post {
   authorId  Int
   comments  Comment[]
   likes     Like[]
-  images    Image[] 
+  images    Image[]   @relation("PostImages")
 
   @@index([authorId])
 }
@@ -147,10 +144,13 @@ model Image {
   id        Int      @id @default(autoincrement())
   url       String
   fileId    String?
-  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
-  postId    Int
+  post      Post?    @relation("PostImages", fields: [postId], references: [id], onDelete: Cascade)
+  postId    Int?
+  comment   Comment? @relation("CommentImages", fields: [commentId], references: [id], onDelete: Cascade)
+  commentId Int?
 
   @@index([postId])
+  @@index([commentId])
 }
 
 model Comment {
@@ -164,6 +164,7 @@ model Comment {
   postId    Int
   replies   Reply[]
   likes     Like[]
+  images    Image[]   @relation("CommentImages")
 
   @@index([authorId])
   @@index([postId])
