@@ -52,7 +52,7 @@ router.post("/genai", async (req, res) => {
       message: text_input || "Hello!!",
       model: model,
       temperature: 0.2, 		
-		num_calls: 1, 		
+		num_calls: 5, 		
 		use_web_search: true, 		
 		selected_docs: null, 
     });

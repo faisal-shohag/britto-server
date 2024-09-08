@@ -89,6 +89,7 @@ router.post("/posts/:postId/toggle-like", async (req, res) => {
   try {
     const { postId } = req.params;
     const userId = parseInt(req.body.userId); // Assuming you have user authentication middleware
+    // console.log(userId);
 
     const existingLike = await prisma.like.findFirst({
       where: {
@@ -260,6 +261,7 @@ router.get("/post/:id/:userId", async (req, res) => {
       })),
     };
 
+
     // console.log(formattedPost);
 
     res.json(formattedPost);
@@ -314,6 +316,7 @@ router.get("/posts/:postId/:userId/comments", async (req, res) => {
     const { page = 1, limit = 10 } = req.query;
 
     const skip = (page - 1) * limit;
+   
 
     const comments = await prisma.comment.findMany({
       where: { postId: parseInt(postId) },
