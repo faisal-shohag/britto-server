@@ -136,6 +136,7 @@ model Post {
   comments  Comment[]
   likes     Like[]
   images    Image[]   @relation("PostImages")
+  type String?
 
   @@index([authorId])
 }

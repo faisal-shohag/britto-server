@@ -12,10 +12,11 @@ const imageKit = new ImageKit({
 // Updated Post routes
 router.post("/posts", async (req, res) => {
   try {
-    const { content, authorId, images } = req.body;
+    const { content, authorId, images, type } = req.body;
     const post = await prisma.post.create({
       data: {
         content,
+        type,
         authorId: parseInt(authorId),
         images: {
           create: images.map(({ url, fileId }) => ({ url, fileId })),
@@ -57,6 +58,7 @@ router.get("/allposts/:userId", async (req, res) => {
             },
           },
           images: true,
+          // type: true,
         },
       }),
       prisma.post.count(),
