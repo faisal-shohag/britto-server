@@ -318,7 +318,6 @@ router.get("/posts/:postId/:userId/comments", async (req, res) => {
     const { page = 1, limit = 10 } = req.query;
 
     const skip = (page - 1) * limit;
-   
 
     const comments = await prisma.comment.findMany({
       where: { postId: parseInt(postId) },
@@ -341,7 +340,6 @@ router.get("/posts/:postId/:userId/comments", async (req, res) => {
                 photoURL: true,
               },
             },
-            // images: true,
             likes: true,
           },
         },
@@ -359,14 +357,13 @@ router.get("/posts/:postId/:userId/comments", async (req, res) => {
       ...comment,
       likeCount: comment.likes.length,
       isLiked: comment.likes.some(like => like.userId === parseInt(req.params.userId)),
+      commentCount: comment.replies.length, // Add the count of replies
       replies: comment.replies.map(reply => ({
         ...reply,
         likeCount: reply.likes.length,
         isLiked: reply.likes.some(like => like.userId === parseInt(req.params.userId)),
       })),
     }));
-
-  
 
     res.json({
       comments: commentsWithLikeInfo,
@@ -379,6 +376,7 @@ router.get("/posts/:postId/:userId/comments", async (req, res) => {
     res.status(500).json({ error: "An error occurred while fetching comments" });
   }
 });
+
 
 // Add comment like endpoint
 router.post("/comments/:commentId/toggle-like", async (req, res) => {
