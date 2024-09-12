@@ -1,32 +1,31 @@
 import { Client, handle_file } from "@gradio/client";
 import { Router } from "express";
 import multer from "multer";
+import bodyParser from 'body-parser';
 
 const router = Router();
 const storage = multer.memoryStorage(); // Store the file in memory
 const upload = multer({ storage: storage });
 
 
-router.post("/Qwen2-VL-72B", upload.single("image"), async (req, res) => {
+
+
+
+router.post("/Qwen2-VL-72B", async (req, res) => {
   try {
-    const { text_input } = req.body;
+    const { text_input, image_data } = req.body;
     const client = await Client.connect("Qwen/Qwen2-VL");
     let history = [];
     let _chatbot = [];
-    let imageResponse = null;
 
-    // Check if an image is provided
-    if (req.file) {
-      const imageBuffer = req.file.buffer;
-      const imageName = req.file.originalname;
+    if (image_data) {
+      const imageBuffer = Buffer.from(image_data.split(',')[1], 'base64');
       
-      // Use the file to create an image object and send it to the model
-      imageResponse = await client.predict("/add_file", {
+      await client.predict("/add_file", {
         history,
-        file: new Blob([imageBuffer], { type: req.file.mimetype })
+        file: new Blob([imageBuffer], { type: 'image/png' }) // Assume PNG, adjust if needed
       });
 
-      // Update the chatbot history with the image
       _chatbot.push([{ file: handle_file(imageBuffer), alt_text: null }, null]);
     }
 
@@ -44,7 +43,6 @@ router.post("/Qwen2-VL-72B", upload.single("image"), async (req, res) => {
     const result = await client.predict("/predict", {
       _chatbot
     });
-    // console.log(result);
 
     // Respond with the prediction result
     res.status(200).json({ result: result });
