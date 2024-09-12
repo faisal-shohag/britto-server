@@ -1,32 +1,35 @@
-import { Client, handle_file } from "@gradio/client";
+import { Client } from "@gradio/client";
 import { Router } from "express";
+import { GoogleGenerativeAI } from '@google/generative-ai';
 import multer from "multer";
-import bodyParser from 'body-parser';
+import dotenv from 'dotenv';
 
 const router = Router();
 const storage = multer.memoryStorage(); // Store the file in memory
 const upload = multer({ storage: storage });
 
 
-
-
-
-router.post("/Qwen2-VL-72B", async (req, res) => {
+router.post("/Qwen2-VL-72B", upload.single("image"), async (req, res) => {
   try {
-    const { text_input, image_data } = req.body;
+    const { text_input } = req.body;
     const client = await Client.connect("Qwen/Qwen2-VL");
     let history = [];
     let _chatbot = [];
+    let imageResponse = null;
 
-    if (image_data) {
-      const imageBuffer = Buffer.from(image_data.split(',')[1], 'base64');
+    // Check if an image is provided
+    if (req.file) {
+      const imageBuffer = req.file.buffer;
+      const imageName = req.file.originalname;
       
-      await client.predict("/add_file", {
+      // Use the file to create an image object and send it to the model
+      imageResponse = await client.predict("/add_file", {
         history,
-        file: new Blob([imageBuffer], { type: 'image/png' }) // Assume PNG, adjust if needed
+        file: new Blob([imageBuffer], { type: req.file.mimetype })
       });
 
-      _chatbot.push([{ file: handle_file(imageBuffer), alt_text: null }, null]);
+      // Update the chatbot history with the image
+      _chatbot.push([{ file: imageResponse, alt_text: null }, null]);
     }
 
     // Add the user's text input to the history
@@ -45,7 +48,7 @@ router.post("/Qwen2-VL-72B", async (req, res) => {
     });
 
     // Respond with the prediction result
-    res.status(200).json({ result: result });
+    res.status(200).json({ result: result.data });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: error.message });
@@ -85,6 +88,30 @@ router.post("/genai", async (req, res) => {
   }
 });
 
+//gemini
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+// console.log(genAI)
+router.post('/gemini', async (req, res) => {
+  try {
+    // Extract prompt from the request body
+    const { text_input } = req.body;
+
+    if (!text_input) {
+      return res.status(400).json({ error: "Prompt is required" });
+    }
+
+    // Fetch the model (gemini-1.5-flash) and generate content
+    const model = await genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const result = await model.generateContent(text_input);
+    // console.log(result.response);
+
+    // Return the generated content
+    res.status(200).json({ generatedText: result.response});
+  } catch (error) {
+    console.error('Error generating content:', error.message);
+    res.status(500).json({ error: 'An error occurred while generating content' });
+  }
+});
 
 
 export default router;
