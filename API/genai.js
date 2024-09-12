@@ -1,4 +1,4 @@
-import { Client } from "@gradio/client";
+import { Client, handle_file } from "@gradio/client";
 import { Router } from "express";
 import multer from "multer";
 
@@ -6,30 +6,54 @@ const router = Router();
 const storage = multer.memoryStorage(); // Store the file in memory
 const upload = multer({ storage: storage });
 
-router.post("/qwen2", upload.single("image"), async (req, res) => {
+
+router.post("/Qwen2-VL-72B", upload.single("image"), async (req, res) => {
   try {
-    // Access the image buffer from the uploaded file
-    const imageBuffer = req.file.buffer;
+    const { text_input } = req.body;
+    const client = await Client.connect("Qwen/Qwen2-VL");
+    let history = [];
+    let _chatbot = [];
+    let imageResponse = null;
 
-    // Convert the buffer to a Blob
-    const exampleImage = new Blob([imageBuffer], { type: req.file.mimetype });
+    // Check if an image is provided
+    if (req.file) {
+      const imageBuffer = req.file.buffer;
+      const imageName = req.file.originalname;
+      
+      // Use the file to create an image object and send it to the model
+      imageResponse = await client.predict("/add_file", {
+        history,
+        file: new Blob([imageBuffer], { type: req.file.mimetype })
+      });
 
-    // Connect to the Gradio client
-    const client = await Client.connect("GanymedeNil/Qwen2-VL-7B");
+      // Update the chatbot history with the image
+      _chatbot.push([{ file: handle_file(imageBuffer), alt_text: null }, null]);
+    }
 
-    // Make the prediction using the in-memory image
-    const result = await client.predict("/run_example", {
-      image: exampleImage,
-      text_input: req.body.text_input || "Hello!!",
-      model_id: "Qwen/Qwen2-VL-7B-Instruct",
+    // Add the user's text input to the history
+    if (text_input) {
+      await client.predict("/add_text", {
+        history,
+        text: text_input
+      });
+      
+      _chatbot.push([text_input, null]);
+    }
+
+    // Get the prediction from the model
+    const result = await client.predict("/predict", {
+      _chatbot
     });
+    // console.log(result);
 
     // Respond with the prediction result
-    res.status(200).json({ result: result.data });
+    res.status(200).json({ result: result });
   } catch (error) {
+    console.error(error);
     res.status(500).json({ error: error.message });
   }
 });
+
 
 router.post("/llama70b", async (req, res) => {
   try {
@@ -62,5 +86,7 @@ router.post("/genai", async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
+
+
 
 export default router;
