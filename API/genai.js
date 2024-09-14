@@ -69,6 +69,23 @@ router.post("/llama70b", async (req, res) => {
   }
 });
 
+router.post("/openaio1", async (req, res) => {
+  try {
+    const client = await Client.connect("yuntian-deng/o1");
+    const result = await client.predict("/predict", {
+      inputs: req.body.text_input || "Hello!!",
+      top_p: 0,
+      temperature: 0.1,
+      chat_counter: 0,
+      chatbot: [[req.body.text_input, null]],
+    });
+    res.status(200).json({ result: result });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 router.post("/genai", async (req, res) => {
     const {text_input, model} = req.body;
   try {

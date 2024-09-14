@@ -37,6 +37,49 @@ model Users {
   comments Comment[]
   replies  Reply[]
   likes    Like[]
+  myCourses Course[]
+}
+
+model Course {
+  id        Int      @id @default(autoincrement())
+  title String
+  subtitle String?
+  user Users? @relation(fields: [userId], references: [id])
+  userId Int?
+  description String
+  type String?
+  photoURL String?
+  routine String?
+  resources CourseResources[]
+  exams Exam[]
+  createdAt DateTime @default(now())
+  isPublished Boolean @default(false)
+  isPaid  Boolean @default(true)
+  fee Float @default(0)
+  start  DateTime
+  end   DateTime
+}
+
+model CourseResources {
+  id        Int      @id @default(autoincrement())
+  title String
+  course Course @relation(fields: [courseId], references: [id])
+  courseId Int
+  type  String?
+  url   String?
+}
+
+model Exam {
+  id        Int      @id @default(autoincrement())
+  title String
+  description String 
+  type String
+  duration DateTime
+  questions Question[]
+  createdAt DateTime @default(now())
+  course Course @relation(fields: [courseId], references: [id])
+  courseId Int
+  isPublished Boolean @default(false)
 }
 
 model Question {
@@ -45,6 +88,8 @@ model Question {
   options Option[]
   explanation String?
   correctAnswer Int
+  exam  Exam @relation(fields: [examId], references: [id])
+  examId Int
   user Users @relation(fields: [userId], references: [id])
   userId Int
   tags    TagsOnQuestions[]
@@ -92,24 +137,8 @@ model Report {
   @@index([questionId])
 }
 
-model Course {
-  id        Int      @id @default(autoincrement())
-  title String
-  description String
-  duration DateTime
 
-  createdAt DateTime @default(now())
-}
 
-model Exam {
-  id        Int      @id @default(autoincrement())
-  title String
-  description String 
-  type String
-  duration DateTime
-
-  createdAt DateTime @default(now())
-}
 
 model Practices {
   id       Int    @id @default(autoincrement())

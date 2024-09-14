@@ -12,6 +12,11 @@ import DELETE from './API/delete.js';
 import circle from './API/circle.js';
 import genai from './API/genai.js'
 
+import courseGet from './API/course/get.js';
+import coursePost from './API/course/post.js';
+import coursePut from './API/course/put.js';
+import courseDelete from './API/course/delete.js';
+
 
 app.use(cors())
 app.use(express.json({ limit: '10mb' }));
@@ -28,6 +33,11 @@ app.use(put)
 app.use(DELETE)
 app.use(circle)
 app.use(genai)
+
+app.use(courseGet)
+app.use(coursePost)
+app.use(coursePut)
+app.use(courseDelete)
 
 app.listen(port, () => {
   console.log(`App listening on port ${port}`)
