@@ -33,32 +33,44 @@ model Users {
   questions   Question[]
   reports     Report[]
   createdAt   DateTime @default(now())
-  posts    Post[]
-  comments Comment[]
-  replies  Reply[]
-  likes    Like[]
-  myCourses Course[]
+  posts       Post[]
+  comments    Comment[]
+  replies     Reply[]
+  likes       Like[]
+  myCourses   Course[]
+  enrolledCourses EnrolledCourse[] // Join table for many-to-many relationship with Course
 }
 
 model Course {
-  id        Int      @id @default(autoincrement())
-  title String
-  subtitle String?
-  user Users? @relation(fields: [userId], references: [id])
-  userId Int?
+  id          Int      @id @default(autoincrement())
+  title       String
+  subtitle    String?
+  user        Users?   @relation(fields: [userId], references: [id])
+  userId      Int?
   description String
-  type String?
-  photoURL String?
-  routine String?
-  resources CourseResources[]
-  exams Exam[]
-  createdAt DateTime @default(now())
-  isPublished Boolean @default(false)
-  isPaid  Boolean @default(true)
-  fee Float @default(0)
-  start  DateTime
-  end   DateTime
+  type        String?
+  photoURL    String?
+  routine     String?
+  resources   CourseResources[]
+  exams       Exam[]
+  createdAt   DateTime @default(now())
+  isPublished Boolean  @default(false)
+  isPaid      Boolean  @default(true)
+  fee         Float    @default(0)
+  start       DateTime
+  end         DateTime
+  enrolledUsers EnrolledCourse[] // Join table for many-to-many relationship with Users
 }
+
+model EnrolledCourse {
+  user   Users  @relation(fields: [userId], references: [id])
+  userId Int
+  course Course @relation(fields: [courseId], references: [id])
+  courseId Int
+
+  @@id([userId, courseId]) // Composite primary key
+}
+
 
 model CourseResources {
   id        Int      @id @default(autoincrement())
@@ -73,8 +85,8 @@ model Exam {
   id        Int      @id @default(autoincrement())
   title String
   description String 
-  type String
-  duration DateTime
+  type Json[]
+  duration Int
   questions Question[]
   createdAt DateTime @default(now())
   course Course @relation(fields: [courseId], references: [id])
