@@ -29,7 +29,9 @@ router.get('/courses/:id/:userId', async (req, res) => {
       include: {
         user: true,
         resources: true,
-        exams: true,
+        exams: {
+          include: { _count: { select: { questions: true } }},
+        },
         // Count the enrolled users
         _count: {
           select: { enrolledUsers: true }, // Get the enrolledUsers count
